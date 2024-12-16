@@ -2,6 +2,7 @@ import 'package:melos/melos.dart';
 import 'package:melos/src/command_configs/command_configs.dart';
 import 'package:melos/src/command_configs/publish.dart';
 import 'package:melos/src/common/glob.dart';
+import 'package:melos/src/common/pubspec_overrides.dart';
 import 'package:melos/src/common/utils.dart';
 import 'package:melos/src/lifecycle_hooks/publish.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -133,6 +134,7 @@ Package _dummyPackage(String name, {List<String> deps = const []}) {
     version: Version(1, 0, 0),
     publishTo: null,
     pubspec: Pubspec('melos_test'),
+    pubspecOverrides: const PubspecOverrides({}),
     categories: [],
   );
 }

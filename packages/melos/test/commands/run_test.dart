@@ -19,7 +19,7 @@ import '../utils.dart';
 void main() {
   group('script', () {
     test(
-      'supports passing package filter options to "melos exec" scripts',
+      'supports passing package filter options to ""melos exec scripts',
       () async {
         final workspaceDir = await createTemporaryWorkspace(
           runPubGet: true,

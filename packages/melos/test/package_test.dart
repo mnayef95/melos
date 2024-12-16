@@ -4,6 +4,7 @@ import 'package:glob/glob.dart';
 import 'package:melos/melos.dart';
 import 'package:melos/src/common/http.dart';
 import 'package:melos/src/common/pub_credential.dart';
+import 'package:melos/src/common/pubspec_overrides.dart';
 import 'package:melos/src/package.dart';
 import 'package:platform/platform.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -255,6 +256,7 @@ void main() {
             version: Version(1, 0, 0),
             publishTo: Uri(),
             pubspec: Pubspec('melos_test'),
+            pubspecOverrides: const PubspecOverrides({}),
             categories: category,
           );
         }

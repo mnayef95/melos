@@ -18,6 +18,7 @@ import 'common/io.dart';
 import 'common/platform.dart';
 import 'common/pub_hosted.dart' as pub;
 import 'common/pub_hosted_package.dart';
+import 'common/pubspec_overrides.dart';
 import 'common/utils.dart';
 import 'common/validation.dart';
 import 'logging.dart';
@@ -537,6 +538,14 @@ class PackageMap {
         final pubspec = Pubspec.parse(pubspecFile.readAsStringSync());
         final name = pubspec.name;
 
+        final pubspecOverridesFile =
+            File(p.join(pubspecDirPath, 'pubspec_overrides.yaml'));
+        PubspecOverrides? pubspecOverrides;
+        if (pubspecOverridesFile.existsSync()) {
+          pubspecOverrides =
+              PubspecOverrides.parse(pubspecOverridesFile.readAsStringSync());
+        }
+
         if (packageMap.containsKey(name)) {
           throw MelosConfigException(
             '''
@@ -575,6 +584,7 @@ The packages that caused the problem are:
           devDependencies: pubspec.devDependencies.keys.toList(),
           dependencyOverrides: pubspec.dependencyOverrides.keys.toList(),
           pubspec: pubspec,
+          pubspecOverrides: pubspecOverrides,
           categories: filteredCategories,
         );
       }),
@@ -852,6 +862,7 @@ class Package {
     required this.version,
     required this.publishTo,
     required this.pubspec,
+    required this.pubspecOverrides,
     required this.categories,
   })  : _packageMap = packageMap,
         assert(p.isAbsolute(path));
@@ -867,6 +878,7 @@ class Package {
   final Version version;
   final String path;
   final Pubspec pubspec;
+  final PubspecOverrides? pubspecOverrides;
   final List<String> categories;
 
   /// Package path as a normalized sting relative to the root of the workspace.

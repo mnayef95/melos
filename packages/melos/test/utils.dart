@@ -8,6 +8,7 @@ import 'package:melos/melos.dart';
 import 'package:melos/src/common/glob.dart';
 import 'package:melos/src/common/io.dart';
 import 'package:melos/src/common/platform.dart';
+import 'package:melos/src/common/pubspec_overrides.dart';
 import 'package:melos/src/common/utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
@@ -393,6 +394,7 @@ class VirtualWorkspaceBuilder {
         packageMap: packageMap,
         pathRelativeToWorkspace: pathRelativeToWorkspace,
         categories: [],
+        pubspecOverrides: const PubspecOverrides({}),
       );
     }
 

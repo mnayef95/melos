@@ -20,6 +20,7 @@ class BootstrapCommandConfigs {
     this.environment,
     this.dependencies,
     this.devDependencies,
+    this.dependencyOverrides,
     this.dependencyOverridePaths = const [],
     this.hooks = LifecycleHooks.empty,
   });
@@ -79,6 +80,7 @@ class BootstrapCommandConfigs {
     final environment = bootstrapConstraints.environment ?? {};
     final dependencies = bootstrapConstraints.dependencies;
     final devDependencies = bootstrapConstraints.devDependencies;
+    final dependencyOverrides = bootstrapConstraints.dependencyOverrides;
 
     return BootstrapCommandConfigs(
       runPubGetInParallel: runPubGetInParallel,
@@ -87,6 +89,7 @@ class BootstrapCommandConfigs {
       environment: environment.isEmpty ? null : environment,
       dependencies: dependencies.isEmpty ? null : dependencies,
       devDependencies: devDependencies.isEmpty ? null : devDependencies,
+    dependencyOverrides: dependencyOverrides.isEmpty ? null : dependencyOverrides,
       dependencyOverridePaths: dependencyOverridePaths
           .map(
             (override) =>
@@ -122,6 +125,9 @@ class BootstrapCommandConfigs {
 
   /// Dependencies to be synced between all packages.
   final Map<String, Dependency>? dependencies;
+
+  /// Dependencies to be added to pubspec_overrides.yaml for all packages.
+  final Map<String, Dependency>? dependencyOverrides;
 
   /// Dev dependencies to be synced between all packages.
   final Map<String, Dependency>? devDependencies;

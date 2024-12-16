@@ -51,7 +51,8 @@ mixin _BootstrapMixin on _CleanMixin {
         try {
           if (bootstrapCommandConfig.environment != null ||
               bootstrapCommandConfig.dependencies != null ||
-              bootstrapCommandConfig.devDependencies != null) {
+              bootstrapCommandConfig.devDependencies != null ||
+              bootstrapCommandConfig.dependencyOverrides != null) {
             logger.log('Updating common dependencies in workspace packages...');
 
             final filteredPackages = workspace.filteredPackages.values;
@@ -61,6 +62,7 @@ mixin _BootstrapMixin on _CleanMixin {
                 environment: bootstrapCommandConfig.environment,
                 dependencies: bootstrapCommandConfig.dependencies,
                 devDependencies: bootstrapCommandConfig.devDependencies,
+                dependencyOverrides: bootstrapCommandConfig.dependencyOverrides,
               );
             }).drain<void>();
 
@@ -266,6 +268,7 @@ mixin _BootstrapMixin on _CleanMixin {
     required Map<String, VersionConstraint?>? environment,
     required Map<String, Dependency>? dependencies,
     required Map<String, Dependency>? devDependencies,
+    required Map<String, Dependency>? dependencyOverrides,
   }) async {
     final packagePubspecFile = utils.pubspecPathForDirectory(package.path);
     final packagePubspecContents = await readTextFileAsync(packagePubspecFile);
@@ -303,6 +306,39 @@ mixin _BootstrapMixin on _CleanMixin {
           'Updated $updatedDependenciesCount dependencies',
         if (updatedDevDependenciesCount > 0)
           'Updated $updatedDevDependenciesCount dev_dependencies',
+      ];
+      if (message.isNotEmpty) {
+        logger
+            .child(packageNameStyle(package.name), prefix: '$checkLabel ')
+            .child(message.join('\n'));
+      }
+    }
+
+    final packagePubspecOverridesFile =
+        utils.pubspecOverridesPathForDirectory(package.path);
+    if (!fileExists(packagePubspecOverridesFile)) {
+      return;
+    }
+    final packagePubspecOverridesContents =
+        await readTextFileAsync(packagePubspecOverridesFile);
+    final pubspecOverridesEditor = YamlEditor(packagePubspecOverridesContents);
+
+    final updatedDependencyOverridesCount = _insertDependencies(
+      pubspecOverridesEditor: pubspecOverridesEditor,
+      workspaceDependencies: dependencyOverrides,
+      packageDependencies: package.pubspecOverrides?.dependencyOverrides ?? {},
+      pubspecKey: 'dependency_overrides',
+    );
+
+    if (pubspecOverridesEditor.edits.isNotEmpty) {
+      await writeTextFileAsync(
+        packagePubspecOverridesFile,
+        pubspecOverridesEditor.toString(),
+      );
+
+      final message = <String>[
+        if (updatedDependencyOverridesCount > 0)
+          'Updated $updatedDependencyOverridesCount dependency_overrides',
       ];
       if (message.isNotEmpty) {
         logger
@@ -369,6 +405,33 @@ mixin _BootstrapMixin on _CleanMixin {
 
     for (final entry in dependenciesToUpdate) {
       pubspecEditor.update(
+        [pubspecKey, entry.key],
+        wrapAsYamlNode(
+          entry.value.toJson(),
+          collectionStyle: CollectionStyle.BLOCK,
+        ),
+      );
+    }
+
+    return dependenciesToUpdate.length;
+  }
+
+  int _insertDependencies({
+    required YamlEditor pubspecOverridesEditor,
+    required Map<String, Dependency>? workspaceDependencies,
+    required Map<String, Dependency> packageDependencies,
+    required String pubspecKey,
+  }) {
+    if (workspaceDependencies == null) return 0;
+    // Filter out the packages that do not exist in package and only the
+    // dependencies that have a different version specified in the workspace.
+    final dependenciesToUpdate = workspaceDependencies.entries.where((entry) {
+      if (packageDependencies[entry.key] == entry.value) return false;
+      return true;
+    });
+
+    for (final entry in dependenciesToUpdate) {
+      pubspecOverridesEditor.update(
         [pubspecKey, entry.key],
         wrapAsYamlNode(
           entry.value.toJson(),
